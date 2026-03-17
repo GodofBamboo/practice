@@ -1,1 +1,128 @@
-たけした
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>【武将】たけしたの陣幕</title>
+    <style>
+        /* 背景は和紙のような色合いに */
+        body {
+            background-color: #e8dccb; 
+            color: #2b2b2b;
+            font-family: 'Yu Mincho', 'MS Mincho', 'Hiragino Mincho ProN', serif;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        /* 巻物・陣幕を模した枠 */
+        .jinmaku-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fdfbf7;
+            border: 6px solid #3c3029;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 8px 8px 15px rgba(0, 0, 0, 0.4);
+            position: relative;
+        }
+
+        /* 家紋や旗印を思わせる大見出し */
+        h1 {
+            color: #8b0000; /* 深紅・血の色 */
+            text-align: center;
+            font-size: 2.5em;
+            border-bottom: 3px dashed #8b0000;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        /* 各章の小見出し */
+        h2 {
+            background-color: #3c3029; /* 墨色・焦茶 */
+            color: #fdfbf7;
+            padding: 12px 20px;
+            border-radius: 5px;
+            border-left: 8px solid #d4af37; /* 金箔の装飾 */
+        }
+
+        .intro {
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+
+        ul {
+            list-style-type: square;
+            font-size: 1.1em;
+            padding-left: 40px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        .skills p {
+            font-size: 1.2em;
+            font-weight: bold;
+            padding-left: 20px;
+            border-left: 4px solid #8b0000;
+            margin-left: 10px;
+        }
+
+        /* 矢文（ボタン）の装飾 */
+        .yabumi-btn {
+            display: block;
+            margin: 40px auto 10px;
+            padding: 15px 40px;
+            background-color: #8b0000;
+            color: #ffffff;
+            font-size: 1.3em;
+            font-family: 'Yu Mincho', 'MS Mincho', serif;
+            font-weight: bold;
+            border: 2px solid #3c3029;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 4px 4px 0px #3c3029;
+            transition: all 0.2s;
+        }
+
+        .yabumi-btn:hover {
+            background-color: #5a0000;
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px #3c3029;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="jinmaku-container">
+        <h1>風林火山・たけしたの陣</h1>
+        
+        <p class="intro">
+            いざ出陣！拙者、たけしたと申す。<br>
+            此度（こたび）、この電脳の世に己の居城を構えた次第。
+        </p>
+
+        <h2>📜 武将略歴（プロフィール）</h2>
+        <ul>
+            <li><strong>生誕の地：</strong> 〇〇国（※現在のご出身地）</li>
+            <li><strong>現住所：</strong> 〇〇の城（※現在のお住まい）</li>
+            <li><strong>野望：</strong> 天下布武（※今後の目標や夢を書き下され）</li>
+        </ul>
+
+        <h2>⚔️ 得意な武技（スキル・趣味）</h2>
+        <div class="skills">
+            <p>一、〇〇の術（例：絡繰り作成／プログラミング）</p>
+            <p>一、〇〇の術（例：兵糧開発／料理）</p>
+            <p>一、〇〇の術（例：遊戯のめり込み／ゲーム）</p>
+        </div>
+
+        <h2>✉️ 矢文を送る（お問い合わせ）</h2>
+        <p style="text-align: center;">拙者に御用のある者は、遠慮なく下記の文箱より矢文を放たれよ。</p>
+        <button class="yabumi-btn" onclick="alert('シュッ！…矢文が放たれましたぞ！')">矢文を放つ</button>
+    </div>
+
+</body>
+</html>
