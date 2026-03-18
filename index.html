@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>アストロ・ハーベスターズ：エボリューション</title>
+    <title>アストロ・ハーベスターズ：アーカイブス</title>
     <style>
         :root {
             --bg-color: #0b0e14;
@@ -30,6 +30,7 @@
             padding: 15px;
             width: 100%;
             background: linear-gradient(180deg, #161b22 0%, transparent 100%);
+            flex-shrink: 0; /* ヘッダーの縮小を防ぐ */
         }
 
         #resource-display {
@@ -47,12 +48,13 @@
             margin-top: 5px;
         }
 
+        /* メインコンテナの高さ制限を追加してスクロールを有効に */
         #main-container {
             display: flex;
             width: 95%;
             max-width: 1100px;
             gap: 20px;
-            flex-grow: 1;
+            height: calc(100vh - 140px); /* 画面高さからヘッダー分を引く */
             padding-bottom: 20px;
         }
 
@@ -65,7 +67,6 @@
             position: relative;
         }
 
-        /* 惑星の進化アニメーション */
         #planet-container {
             position: relative;
             cursor: pointer;
@@ -89,14 +90,23 @@
             color: #ffce54;
         }
 
+        /* メニューをスクロール可能に修正 */
         #shop-area {
             width: 380px;
-            overflow-y: auto;
+            height: 100%;
+            overflow-y: auto; /* 縦スクロールを有効化 */
             background-color: var(--panel-bg);
             border-radius: 15px;
             padding: 15px;
             border-left: 2px solid #343b47;
+            box-sizing: border-box; /* パディングを含めて高さを計算 */
         }
+
+        /* スクロールバーの装飾 */
+        #shop-area::-webkit-scrollbar { width: 8px; }
+        #shop-area::-webkit-scrollbar-track { background: #1a1f29; border-radius: 4px; }
+        #shop-area::-webkit-scrollbar-thumb { background: #343b47; border-radius: 4px; }
+        #shop-area::-webkit-scrollbar-thumb:hover { background: #00d4ff; }
 
         .item-card {
             background: #252d3a;
@@ -133,18 +143,85 @@
 
         #evo-message {
             position: absolute;
-            top: 20%;
+            top: 15%;
             font-size: 2rem;
             font-weight: bold;
             color: #fff;
             text-shadow: 0 0 20px var(--accent-color);
             pointer-events: none;
             opacity: 0;
+            z-index: 50;
         }
         .animate-evo { animation: flash 2s; }
         @keyframes flash {
             0%, 100% { opacity: 0; }
             50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        /* 図鑑ボタンとモーダルのスタイル */
+        #btn-archive {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #243b55;
+            color: #fff;
+            border: 1px solid var(--accent-color);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        #btn-archive:hover {
+            background: var(--accent-color);
+            color: #000;
+            box-shadow: 0 0 15px var(--accent-color);
+        }
+
+        #modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        #modal-content {
+            background: #1a1f29;
+            width: 80%;
+            max-width: 600px;
+            max-height: 80vh;
+            border-radius: 15px;
+            border: 2px solid var(--accent-color);
+            padding: 20px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .lore-entry {
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #252d3a;
+            border-left: 4px solid #5d9cec;
+            border-radius: 4px;
+        }
+        .lore-entry h4 { margin: 0 0 5px 0; color: #ffce54; }
+        .lore-entry p { margin: 0; font-size: 0.9rem; line-height: 1.4; color: #ddd; }
+        .lore-locked {
+            opacity: 0.3;
+            border-left-color: #333;
+            text-align: center;
+            font-style: italic;
         }
     </style>
 </head>
@@ -166,11 +243,22 @@
             </div>
             <div id="planet-name">初期化された岩石惑星</div>
             <p style="font-size: 0.8rem; color: #666;">タップで資源を採取</p>
+            
+            <button id="btn-archive" onclick="openArchive()">🌌 宇宙の歴史（アーカイブ）を見る</button>
         </div>
 
         <div id="shop-area">
             <h3 style="margin-top:0">銀河開発メニュー</h3>
             <div id="shop-items"></div>
+        </div>
+    </div>
+
+    <div id="modal-overlay">
+        <div id="modal-content">
+            <span class="close-btn" onclick="closeArchive()">×</span>
+            <h2 style="color: var(--accent-color); margin-top:0;">宇宙開拓史</h2>
+            <p style="font-size: 0.8rem; color:#888;">惑星が進化すると新たな歴史が刻まれます。</p>
+            <div id="lore-list"></div>
         </div>
     </div>
 
@@ -180,22 +268,24 @@
             currentEvoLevel: 0,
             items: [
                 { id: 0, name: "採掘ドローン", cost: 15, sps: 1, count: 0 },
-                { id: 1, name: "酸素精製プラント", cost: 100, sps: 8, count: 0 }, // 5 -> 8 (ブースト)
-                { id: 2, name: "地熱発電所", cost: 1100, sps: 45, count: 0 },    // 12 -> 45
-                { id: 3, name: "軌道エレベーター", cost: 12000, sps: 250, count: 0 }, // 45 -> 250
-                { id: 4, name: "反物質リアクター", cost: 130000, sps: 1600, count: 0 }, // 150 -> 1600
-                { id: 5, name: "銀河貿易センター", cost: 1400000, sps: 12000, count: 0 } // 800 -> 12000
+                { id: 1, name: "酸素精製プラント", cost: 100, sps: 8, count: 0 },
+                { id: 2, name: "地熱発電所", cost: 1100, sps: 45, count: 0 },
+                { id: 3, name: "軌道エレベーター", cost: 12000, sps: 250, count: 0 },
+                { id: 4, name: "反物質リアクター", cost: 130000, sps: 1600, count: 0 },
+                { id: 5, name: "銀河貿易センター", cost: 1400000, sps: 12000, count: 0 },
+                { id: 6, name: "ダイソン球", cost: 15000000, sps: 95000, count: 0 }, // 新規追加施設！
+                { id: 7, name: "人工ブラックホール", cost: 200000000, sps: 800000, count: 0 } // 新規追加施設！
             ]
         };
 
         const planetEvos = [
-            { threshold: 0, name: "不毛な岩石惑星", color: "#5d9cec" },
-            { threshold: 10, name: "大気のある惑星", color: "#4fc1e9" },
-            { threshold: 100, name: "緑豊かな新世界", color: "#a0d468" },
-            { threshold: 1000, name: "高度文明の惑星", color: "#ffce54" },
-            { threshold: 10000, name: "サイバー・ハブ", color: "#ac92ec" },
-            { threshold: 100000, name: "銀河の要塞都市", color: "#ed5565" },
-            { threshold: 1000000, name: "超次元惑星コア", color: "#ffffff" }
+            { threshold: 0, name: "不毛な岩石惑星", color: "#5d9cec", loreTitle: "第1章：孤独な採掘", loreDesc: "何もない宇宙の片隅で、最初の採掘ドローンが起動した。すべてはここから始まる。" },
+            { threshold: 10, name: "大気のある惑星", color: "#4fc1e9", loreTitle: "第2章：薄青のヴェール", loreDesc: "酸素精製により、惑星は薄い青色の大気に包まれた。微かな生命の兆しを感じる。" },
+            { threshold: 100, name: "緑豊かな新世界", color: "#a0d468", loreTitle: "第3章：緑の開拓地", loreDesc: "地熱エネルギーが大地を暖め、植物が爆発的に繁殖し始めた。もはやここは不毛の地ではない。" },
+            { threshold: 1000, name: "高度文明の惑星", color: "#ffce54", loreTitle: "第4章：星を繋ぐ塔", loreDesc: "軌道エレベーターが天を貫き、地表と宇宙が完全にリンクした。文明は次なるステージへ。" },
+            { threshold: 10000, name: "サイバー・ハブ", color: "#ac92ec", loreTitle: "第5章：情報の特異点", loreDesc: "反物質の力で情報網が光速を超え、惑星そのものが超巨大な演算器へと変貌を遂げた。" },
+            { threshold: 100000, name: "銀河の要塞都市", color: "#ed5565", loreTitle: "第6章：銀河の中心", loreDesc: "膨大な富が集まるこの星は、全銀河の経済と軍事を支配する難攻不落の要塞都市となった。" },
+            { threshold: 1000000, name: "超次元惑星コア", color: "#ffffff", loreTitle: "第7章：物質の超越", loreDesc: "エネルギーの生産量が物質の限界を突破。星は純粋な光を放つ次元の特異点へと進化した。" }
         ];
 
         function loadGame() {
@@ -203,10 +293,14 @@
             if (saved) {
                 const data = JSON.parse(saved);
                 gameState.stardust = data.stardust;
+                gameState.currentEvoLevel = data.currentEvoLevel || 0; // Evoレベルもロード
                 data.items.forEach((item, i) => {
-                    gameState.items[i].count = item.count;
-                    gameState.items[i].cost = item.cost;
+                    if(gameState.items[i]) {
+                        gameState.items[i].count = item.count;
+                        gameState.items[i].cost = item.cost;
+                    }
                 });
+                applyEvolution(gameState.currentEvoLevel);
             }
         }
 
@@ -231,9 +325,9 @@
         }
 
         function clickPlanet(e) {
-            const power = 1 + Math.floor(getTotalSps() * 0.05); // SPSの5%をクリック力に加算
+            const power = 1 + Math.floor(getTotalSps() * 0.05);
             gameState.stardust += power;
-            createFloatingText(e.clientX, e.clientY, `+${power}`);
+            createFloatingText(e.clientX, e.clientY, `+${power.toLocaleString()}`);
             updateDisplay();
         }
 
@@ -252,7 +346,7 @@
             if (gameState.stardust >= item.cost) {
                 gameState.stardust -= item.cost;
                 item.count++;
-                item.cost *= 1.2; // コスト上昇率を少し高めてバランス調整
+                item.cost *= 1.2;
                 updateDisplay();
                 updateShop();
                 saveGame();
@@ -282,16 +376,20 @@
 
             if (newEvo > gameState.currentEvoLevel) {
                 gameState.currentEvoLevel = newEvo;
-                const evo = planetEvos[newEvo];
-                document.getElementById('planet-visual').style.setProperty('--planet-color', evo.color);
-                document.getElementById('planet-visual').style.boxShadow = `0 0 80px ${evo.color}88`;
-                document.getElementById('planet-name').innerText = evo.name;
+                applyEvolution(newEvo);
                 
                 const msg = document.getElementById('evo-message');
                 msg.classList.remove('animate-evo');
-                void msg.offsetWidth; // リフロー発生させてアニメーションをリセット
+                void msg.offsetWidth;
                 msg.classList.add('animate-evo');
             }
+        }
+
+        function applyEvolution(level) {
+            const evo = planetEvos[level];
+            document.getElementById('planet-visual').style.setProperty('--planet-color', evo.color);
+            document.getElementById('planet-visual').style.boxShadow = `0 0 80px ${evo.color}88`;
+            document.getElementById('planet-name').innerText = evo.name;
         }
 
         function updateDisplay() {
@@ -313,9 +411,41 @@
         function saveGame() {
             const data = {
                 stardust: gameState.stardust,
+                currentEvoLevel: gameState.currentEvoLevel,
                 items: gameState.items.map(i => ({ count: i.count, cost: i.cost }))
             };
             localStorage.setItem('astroEvolutionSave', JSON.stringify(data));
+        }
+
+        // 図鑑（アーカイブ）関連の処理
+        function openArchive() {
+            const overlay = document.getElementById('modal-overlay');
+            const list = document.getElementById('lore-list');
+            list.innerHTML = ''; // リストを初期化
+
+            planetEvos.forEach((evo, index) => {
+                const entry = document.createElement('div');
+                if (index <= gameState.currentEvoLevel) {
+                    // アンロック済み
+                    entry.className = 'lore-entry';
+                    entry.style.borderLeftColor = evo.color;
+                    entry.innerHTML = `
+                        <h4 style="color: ${evo.color}">${evo.loreTitle}</h4>
+                        <p>${evo.loreDesc}</p>
+                    `;
+                } else {
+                    // 未解放
+                    entry.className = 'lore-entry lore-locked';
+                    entry.innerHTML = `<p>❓ 条件未達成（SPS: ${evo.threshold.toLocaleString()}で解放）</p>`;
+                }
+                list.appendChild(entry);
+            });
+
+            overlay.style.display = 'flex';
+        }
+
+        function closeArchive() {
+            document.getElementById('modal-overlay').style.display = 'none';
         }
 
         loadGame();
