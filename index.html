@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>アストロ・ハーベスターズ / Astro Harvesters</title>
+    <title>アストロ・ハーベスターズ：エボリューション</title>
     <style>
         :root {
             --bg-color: #0b0e14;
             --accent-color: #00d4ff;
             --text-color: #e0e0e0;
             --panel-bg: #1a1f29;
+            --planet-color: #5d9cec;
         }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             margin: 0;
             display: flex;
             flex-direction: column;
@@ -26,114 +27,124 @@
 
         #header {
             text-align: center;
-            padding: 20px;
+            padding: 15px;
             width: 100%;
             background: linear-gradient(180deg, #161b22 0%, transparent 100%);
         }
 
         #resource-display {
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             font-weight: bold;
             color: var(--accent-color);
-            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+            text-shadow: 0 0 15px rgba(0, 212, 255, 0.6);
         }
 
-        .sub-text {
-            font-size: 1rem;
-            opacity: 0.8;
+        .status-panel {
+            background: rgba(255,255,255,0.05);
+            padding: 5px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 5px;
         }
 
         #main-container {
             display: flex;
-            width: 90%;
-            max-width: 1000px;
+            width: 95%;
+            max-width: 1100px;
             gap: 20px;
             flex-grow: 1;
             padding-bottom: 20px;
         }
 
-        #click-area {
+        #view-area {
             flex: 1;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: radial-gradient(circle, #243b55 0%, #0b0e14 70%);
-            border-radius: 20px;
+            position: relative;
+        }
+
+        /* 惑星の進化アニメーション */
+        #planet-container {
+            position: relative;
             cursor: pointer;
             transition: transform 0.1s;
-            user-select: none;
         }
-
-        #click-area:active {
-            transform: scale(0.98);
-        }
+        #planet-container:active { transform: scale(0.95); }
 
         #planet-visual {
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle at 30% 30%, #5d9cec, #2f3e46);
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle at 30% 30%, var(--planet-color), #000);
             border-radius: 50%;
-            box-shadow: 0 0 50px rgba(93, 156, 236, 0.3);
+            box-shadow: 0 0 60px rgba(0, 212, 255, 0.2);
+            transition: all 1s ease;
+        }
+
+        #planet-name {
+            margin-top: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffce54;
         }
 
         #shop-area {
-            width: 350px;
+            width: 380px;
             overflow-y: auto;
             background-color: var(--panel-bg);
             border-radius: 15px;
             padding: 15px;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+            border-left: 2px solid #343b47;
         }
 
         .item-card {
             background: #252d3a;
-            padding: 15px;
-            margin-bottom: 10px;
+            padding: 12px;
+            margin-bottom: 8px;
             border-radius: 10px;
             cursor: pointer;
             border: 1px solid #343b47;
-            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
         }
+        .item-card:hover { background: #2e3848; }
+        .item-card.disabled { opacity: 0.4; cursor: not-allowed; }
 
-        .item-card:hover {
-            background: #2e3848;
-        }
+        .item-info { display: flex; justify-content: space-between; align-items: center; }
+        .item-name { font-weight: bold; font-size: 1rem; }
+        .item-count { font-size: 1.2rem; color: var(--accent-color); font-weight: bold; }
+        .item-cost { color: #ffce54; font-size: 0.85rem; display: block; }
+        .item-desc { font-size: 0.75rem; color: #888; }
 
-        .item-card.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .item-name {
-            font-weight: bold;
-            display: block;
-            font-size: 1.1rem;
-        }
-
-        .item-cost {
-            color: #ffce54;
-            font-size: 0.9rem;
-        }
-
-        .item-count {
-            float: right;
-            font-size: 1.2rem;
-            color: var(--accent-color);
-        }
-
-        /* 演出用 */
         .floating-text {
             position: absolute;
-            color: var(--accent-color);
+            color: #fff;
             font-weight: bold;
             pointer-events: none;
-            animation: floatUp 1s ease-out forwards;
+            animation: floatUp 0.8s forwards;
+            z-index: 100;
         }
 
         @keyframes floatUp {
             0% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-100px); opacity: 0; }
+            100% { transform: translateY(-120px); opacity: 0; }
+        }
+
+        #evo-message {
+            position: absolute;
+            top: 20%;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 20px var(--accent-color);
+            pointer-events: none;
+            opacity: 0;
+        }
+        .animate-evo { animation: flash 2s; }
+        @keyframes flash {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; transform: scale(1.2); }
         }
     </style>
 </head>
@@ -142,89 +153,90 @@
     <div id="header">
         <h1>ASTRO HARVESTERS</h1>
         <div id="resource-display">0</div>
-        <div class="sub-text">毎秒生産量 (SPS): <span id="sps-display">0</span></div>
+        <div class="status-panel">
+            SPS (毎秒生産量): <span id="sps-display" style="color:var(--accent-color)">0</span>
+        </div>
     </div>
 
     <div id="main-container">
-        <div id="click-area" onclick="clickPlanet(event)">
-            <div id="planet-visual"></div>
-            <p>惑星をタップして資源を回収</p>
+        <div id="view-area">
+            <div id="evo-message">PLANET EVOLVED!</div>
+            <div id="planet-container" onclick="clickPlanet(event)">
+                <div id="planet-visual"></div>
+            </div>
+            <div id="planet-name">初期化された岩石惑星</div>
+            <p style="font-size: 0.8rem; color: #666;">タップで資源を採取</p>
         </div>
 
         <div id="shop-area">
-            <h3>惑星開発施設</h3>
+            <h3 style="margin-top:0">銀河開発メニュー</h3>
             <div id="shop-items"></div>
         </div>
     </div>
 
     <script>
-        // ゲームデータ
         let gameState = {
             stardust: 0,
-            totalStardust: 0,
+            currentEvoLevel: 0,
             items: [
-                { id: 0, name: "自動採掘ドローン", cost: 15, baseSps: 1, count: 0 },
-                { id: 1, name: "酸素精製プラント", cost: 100, baseSps: 5, count: 0 },
-                { id: 2, name: "地熱発電タービン", cost: 1100, baseSps: 12, count: 0 },
-                { id: 3, name: "軌道エレベーター", cost: 12000, baseSps: 45, count: 0 },
-                { id: 4, name: "反物質リアクター", cost: 130000, baseSps: 150, count: 0 },
-                { id: 5, name: "銀河貿易センター", cost: 1400000, baseSps: 800, count: 0 }
+                { id: 0, name: "採掘ドローン", cost: 15, sps: 1, count: 0 },
+                { id: 1, name: "酸素精製プラント", cost: 100, sps: 8, count: 0 }, // 5 -> 8 (ブースト)
+                { id: 2, name: "地熱発電所", cost: 1100, sps: 45, count: 0 },    // 12 -> 45
+                { id: 3, name: "軌道エレベーター", cost: 12000, sps: 250, count: 0 }, // 45 -> 250
+                { id: 4, name: "反物質リアクター", cost: 130000, sps: 1600, count: 0 }, // 150 -> 1600
+                { id: 5, name: "銀河貿易センター", cost: 1400000, sps: 12000, count: 0 } // 800 -> 12000
             ]
         };
 
-        // セーブデータの読み込み
-        const savedData = localStorage.getItem('astroHarvesterSave');
-        if (savedData) {
-            const parsed = JSON.parse(savedData);
-            gameState.stardust = parsed.stardust || 0;
-            gameState.items.forEach((item, index) => {
-                if (parsed.items && parsed.items[index]) {
-                    item.count = parsed.items[index].count;
-                    item.cost = parsed.items[index].cost;
-                }
-            });
+        const planetEvos = [
+            { threshold: 0, name: "不毛な岩石惑星", color: "#5d9cec" },
+            { threshold: 10, name: "大気のある惑星", color: "#4fc1e9" },
+            { threshold: 100, name: "緑豊かな新世界", color: "#a0d468" },
+            { threshold: 1000, name: "高度文明の惑星", color: "#ffce54" },
+            { threshold: 10000, name: "サイバー・ハブ", color: "#ac92ec" },
+            { threshold: 100000, name: "銀河の要塞都市", color: "#ed5565" },
+            { threshold: 1000000, name: "超次元惑星コア", color: "#ffffff" }
+        ];
+
+        function loadGame() {
+            const saved = localStorage.getItem('astroEvolutionSave');
+            if (saved) {
+                const data = JSON.parse(saved);
+                gameState.stardust = data.stardust;
+                data.items.forEach((item, i) => {
+                    gameState.items[i].count = item.count;
+                    gameState.items[i].cost = item.cost;
+                });
+            }
         }
 
-        // 初期描画
         function initShop() {
-            const shopContainer = document.getElementById('shop-items');
-            shopContainer.innerHTML = '';
+            const container = document.getElementById('shop-items');
+            container.innerHTML = '';
             gameState.items.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'item-card';
                 card.id = `item-${item.id}`;
                 card.onclick = () => buyItem(item.id);
                 card.innerHTML = `
-                    <span class="item-count" id="count-${item.id}">${item.count}</span>
-                    <span class="item-name">${item.name}</span>
-                    <span class="item-cost">コスト: <span id="cost-${item.id}">${Math.floor(item.cost)}</span></span>
+                    <div class="item-info">
+                        <span class="item-name">${item.name}</span>
+                        <span class="item-count" id="count-${item.id}">${item.count}</span>
+                    </div>
+                    <span class="item-cost">Cost: <span id="cost-${item.id}">${Math.floor(item.cost)}</span></span>
+                    <span class="item-desc">生産量: +${item.sps.toLocaleString()}/sec</span>
                 `;
-                shopContainer.appendChild(card);
+                container.appendChild(card);
             });
         }
 
-        // クリック処理
         function clickPlanet(e) {
-            const gain = 1;
-            gameState.stardust += gain;
-            createFloatingText(e.clientX, e.clientY, `+${gain}`);
+            const power = 1 + Math.floor(getTotalSps() * 0.05); // SPSの5%をクリック力に加算
+            gameState.stardust += power;
+            createFloatingText(e.clientX, e.clientY, `+${power}`);
             updateDisplay();
         }
 
-        // 購入処理
-        function buyItem(id) {
-            const item = gameState.items[id];
-            if (gameState.stardust >= item.cost) {
-                gameState.stardust -= item.cost;
-                item.count++;
-                item.cost *= 1.15; // コストが15%ずつ上昇
-                updateDisplay();
-                updateShop();
-                saveGame();
-            }
-        }
-
-        // 浮遊テキスト演出
         function createFloatingText(x, y, text) {
             const el = document.createElement('div');
             el.className = 'floating-text';
@@ -232,53 +244,84 @@
             el.style.top = `${y}px`;
             el.innerText = text;
             document.body.appendChild(el);
-            setTimeout(() => el.remove(), 1000);
+            setTimeout(() => el.remove(), 800);
         }
 
-        // 毎秒の更新処理
+        function buyItem(id) {
+            const item = gameState.items[id];
+            if (gameState.stardust >= item.cost) {
+                gameState.stardust -= item.cost;
+                item.count++;
+                item.cost *= 1.2; // コスト上昇率を少し高めてバランス調整
+                updateDisplay();
+                updateShop();
+                saveGame();
+            }
+        }
+
+        function getTotalSps() {
+            return gameState.items.reduce((sum, item) => sum + (item.count * item.sps), 0);
+        }
+
         function update() {
-            let totalSps = 0;
-            gameState.items.forEach(item => {
-                totalSps += item.count * item.baseSps;
-            });
-            
-            gameState.stardust += totalSps / 10; // 0.1秒ごとの加算
+            gameState.stardust += getTotalSps() / 10;
             updateDisplay();
             updateShop();
+            checkEvolution();
+        }
+
+        function checkEvolution() {
+            const sps = getTotalSps();
+            let newEvo = 0;
+            for (let i = planetEvos.length - 1; i >= 0; i--) {
+                if (sps >= planetEvos[i].threshold) {
+                    newEvo = i;
+                    break;
+                }
+            }
+
+            if (newEvo > gameState.currentEvoLevel) {
+                gameState.currentEvoLevel = newEvo;
+                const evo = planetEvos[newEvo];
+                document.getElementById('planet-visual').style.setProperty('--planet-color', evo.color);
+                document.getElementById('planet-visual').style.boxShadow = `0 0 80px ${evo.color}88`;
+                document.getElementById('planet-name').innerText = evo.name;
+                
+                const msg = document.getElementById('evo-message');
+                msg.classList.remove('animate-evo');
+                void msg.offsetWidth; // リフロー発生させてアニメーションをリセット
+                msg.classList.add('animate-evo');
+            }
         }
 
         function updateDisplay() {
             document.getElementById('resource-display').innerText = Math.floor(gameState.stardust).toLocaleString();
-            let totalSps = gameState.items.reduce((sum, item) => sum + (item.count * item.baseSps), 0);
-            document.getElementById('sps-display').innerText = totalSps.toLocaleString();
+            document.getElementById('sps-display').innerText = getTotalSps().toLocaleString();
         }
 
         function updateShop() {
             gameState.items.forEach(item => {
                 const card = document.getElementById(`item-${item.id}`);
-                const costSpan = document.getElementById(`cost-${item.id}`);
-                const countSpan = document.getElementById(`count-${item.id}`);
+                document.getElementById(`cost-${item.id}`).innerText = Math.floor(item.cost).toLocaleString();
+                document.getElementById(`count-${item.id}`).innerText = item.count;
                 
-                costSpan.innerText = Math.floor(item.cost).toLocaleString();
-                countSpan.innerText = item.count;
-
-                if (gameState.stardust >= item.cost) {
-                    card.classList.remove('disabled');
-                } else {
-                    card.classList.add('disabled');
-                }
+                if (gameState.stardust >= item.cost) card.classList.remove('disabled');
+                else card.classList.add('disabled');
             });
         }
 
         function saveGame() {
-            localStorage.setItem('astroHarvesterSave', JSON.stringify(gameState));
+            const data = {
+                stardust: gameState.stardust,
+                items: gameState.items.map(i => ({ count: i.count, cost: i.cost }))
+            };
+            localStorage.setItem('astroEvolutionSave', JSON.stringify(data));
         }
 
-        // メインループ (100msごと)
+        loadGame();
         initShop();
         setInterval(update, 100);
-        setInterval(saveGame, 10000); // 10秒ごとに自動セーブ
-
+        setInterval(saveGame, 10000);
     </script>
 </body>
 </html>
