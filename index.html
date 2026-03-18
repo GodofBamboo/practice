@@ -3,126 +3,282 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>【武将】たけしたの陣幕</title>
+    <title>アストロ・ハーベスターズ / Astro Harvesters</title>
     <style>
-        /* 背景は和紙のような色合いに */
+        :root {
+            --bg-color: #0b0e14;
+            --accent-color: #00d4ff;
+            --text-color: #e0e0e0;
+            --panel-bg: #1a1f29;
+        }
+
         body {
-            background-color: #e8dccb; 
-            color: #2b2b2b;
-            font-family: 'Yu Mincho', 'MS Mincho', 'Hiragino Mincho ProN', serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #header {
+            text-align: center;
             padding: 20px;
-            line-height: 1.6;
+            width: 100%;
+            background: linear-gradient(180deg, #161b22 0%, transparent 100%);
         }
 
-        /* 巻物・陣幕を模した枠 */
-        .jinmaku-container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: #fdfbf7;
-            border: 6px solid #3c3029;
-            border-radius: 10px;
-            padding: 40px;
-            box-shadow: 8px 8px 15px rgba(0, 0, 0, 0.4);
-            position: relative;
-        }
-
-        /* 家紋や旗印を思わせる大見出し */
-        h1 {
-            color: #8b0000; /* 深紅・血の色 */
-            text-align: center;
-            font-size: 2.5em;
-            border-bottom: 3px dashed #8b0000;
-            padding-bottom: 10px;
-            margin-top: 0;
-        }
-
-        /* 各章の小見出し */
-        h2 {
-            background-color: #3c3029; /* 墨色・焦茶 */
-            color: #fdfbf7;
-            padding: 12px 20px;
-            border-radius: 5px;
-            border-left: 8px solid #d4af37; /* 金箔の装飾 */
-        }
-
-        .intro {
-            text-align: center;
-            font-size: 1.3em;
+        #resource-display {
+            font-size: 2.5rem;
             font-weight: bold;
-            margin-bottom: 30px;
+            color: var(--accent-color);
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
         }
 
-        ul {
-            list-style-type: square;
-            font-size: 1.1em;
-            padding-left: 40px;
+        .sub-text {
+            font-size: 1rem;
+            opacity: 0.8;
         }
 
-        li {
-            margin-bottom: 10px;
+        #main-container {
+            display: flex;
+            width: 90%;
+            max-width: 1000px;
+            gap: 20px;
+            flex-grow: 1;
+            padding-bottom: 20px;
         }
 
-        .skills p {
-            font-size: 1.2em;
-            font-weight: bold;
-            padding-left: 20px;
-            border-left: 4px solid #8b0000;
-            margin-left: 10px;
-        }
-
-        /* 矢文（ボタン）の装飾 */
-        .yabumi-btn {
-            display: block;
-            margin: 40px auto 10px;
-            padding: 15px 40px;
-            background-color: #8b0000;
-            color: #ffffff;
-            font-size: 1.3em;
-            font-family: 'Yu Mincho', 'MS Mincho', serif;
-            font-weight: bold;
-            border: 2px solid #3c3029;
-            border-radius: 8px;
+        #click-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle, #243b55 0%, #0b0e14 70%);
+            border-radius: 20px;
             cursor: pointer;
-            box-shadow: 4px 4px 0px #3c3029;
-            transition: all 0.2s;
+            transition: transform 0.1s;
+            user-select: none;
         }
 
-        .yabumi-btn:hover {
-            background-color: #5a0000;
-            transform: translate(2px, 2px);
-            box-shadow: 2px 2px 0px #3c3029;
+        #click-area:active {
+            transform: scale(0.98);
+        }
+
+        #planet-visual {
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle at 30% 30%, #5d9cec, #2f3e46);
+            border-radius: 50%;
+            box-shadow: 0 0 50px rgba(93, 156, 236, 0.3);
+        }
+
+        #shop-area {
+            width: 350px;
+            overflow-y: auto;
+            background-color: var(--panel-bg);
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .item-card {
+            background: #252d3a;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 1px solid #343b47;
+            transition: 0.3s;
+        }
+
+        .item-card:hover {
+            background: #2e3848;
+        }
+
+        .item-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .item-name {
+            font-weight: bold;
+            display: block;
+            font-size: 1.1rem;
+        }
+
+        .item-cost {
+            color: #ffce54;
+            font-size: 0.9rem;
+        }
+
+        .item-count {
+            float: right;
+            font-size: 1.2rem;
+            color: var(--accent-color);
+        }
+
+        /* 演出用 */
+        .floating-text {
+            position: absolute;
+            color: var(--accent-color);
+            font-weight: bold;
+            pointer-events: none;
+            animation: floatUp 1s ease-out forwards;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-100px); opacity: 0; }
         }
     </style>
 </head>
 <body>
 
-    <div class="jinmaku-container">
-        <h1>風林火山・たけしたの陣</h1>
-        
-        <p class="intro">
-            いざ出陣！拙者、たけしたと申す。<br>
-            此度（こたび）、この電脳の世に己の居城を構えた次第。
-        </p>
-
-        <h2>📜 武将略歴（プロフィール）</h2>
-        <ul>
-            <li><strong>生誕の地：</strong> 〇〇国（※現在のご出身地）</li>
-            <li><strong>現住所：</strong> 〇〇の城（※現在のお住まい）</li>
-            <li><strong>野望：</strong> 天下布武（※今後の目標や夢を書き下され）</li>
-        </ul>
-
-        <h2>⚔️ 得意な武技（スキル・趣味）</h2>
-        <div class="skills">
-            <p>一、〇〇の術（例：絡繰り作成／プログラミング）</p>
-            <p>一、〇〇の術（例：兵糧開発／料理）</p>
-            <p>一、〇〇の術（例：遊戯のめり込み／ゲーム）</p>
-        </div>
-
-        <h2>✉️ 矢文を送る（お問い合わせ）</h2>
-        <p style="text-align: center;">拙者に御用のある者は、遠慮なく下記の文箱より矢文を放たれよ。</p>
-        <button class="yabumi-btn" onclick="alert('シュッ！…矢文が放たれましたぞ！')">矢文を放つ</button>
+    <div id="header">
+        <h1>ASTRO HARVESTERS</h1>
+        <div id="resource-display">0</div>
+        <div class="sub-text">毎秒生産量 (SPS): <span id="sps-display">0</span></div>
     </div>
 
+    <div id="main-container">
+        <div id="click-area" onclick="clickPlanet(event)">
+            <div id="planet-visual"></div>
+            <p>惑星をタップして資源を回収</p>
+        </div>
+
+        <div id="shop-area">
+            <h3>惑星開発施設</h3>
+            <div id="shop-items"></div>
+        </div>
+    </div>
+
+    <script>
+        // ゲームデータ
+        let gameState = {
+            stardust: 0,
+            totalStardust: 0,
+            items: [
+                { id: 0, name: "自動採掘ドローン", cost: 15, baseSps: 1, count: 0 },
+                { id: 1, name: "酸素精製プラント", cost: 100, baseSps: 5, count: 0 },
+                { id: 2, name: "地熱発電タービン", cost: 1100, baseSps: 12, count: 0 },
+                { id: 3, name: "軌道エレベーター", cost: 12000, baseSps: 45, count: 0 },
+                { id: 4, name: "反物質リアクター", cost: 130000, baseSps: 150, count: 0 },
+                { id: 5, name: "銀河貿易センター", cost: 1400000, baseSps: 800, count: 0 }
+            ]
+        };
+
+        // セーブデータの読み込み
+        const savedData = localStorage.getItem('astroHarvesterSave');
+        if (savedData) {
+            const parsed = JSON.parse(savedData);
+            gameState.stardust = parsed.stardust || 0;
+            gameState.items.forEach((item, index) => {
+                if (parsed.items && parsed.items[index]) {
+                    item.count = parsed.items[index].count;
+                    item.cost = parsed.items[index].cost;
+                }
+            });
+        }
+
+        // 初期描画
+        function initShop() {
+            const shopContainer = document.getElementById('shop-items');
+            shopContainer.innerHTML = '';
+            gameState.items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.id = `item-${item.id}`;
+                card.onclick = () => buyItem(item.id);
+                card.innerHTML = `
+                    <span class="item-count" id="count-${item.id}">${item.count}</span>
+                    <span class="item-name">${item.name}</span>
+                    <span class="item-cost">コスト: <span id="cost-${item.id}">${Math.floor(item.cost)}</span></span>
+                `;
+                shopContainer.appendChild(card);
+            });
+        }
+
+        // クリック処理
+        function clickPlanet(e) {
+            const gain = 1;
+            gameState.stardust += gain;
+            createFloatingText(e.clientX, e.clientY, `+${gain}`);
+            updateDisplay();
+        }
+
+        // 購入処理
+        function buyItem(id) {
+            const item = gameState.items[id];
+            if (gameState.stardust >= item.cost) {
+                gameState.stardust -= item.cost;
+                item.count++;
+                item.cost *= 1.15; // コストが15%ずつ上昇
+                updateDisplay();
+                updateShop();
+                saveGame();
+            }
+        }
+
+        // 浮遊テキスト演出
+        function createFloatingText(x, y, text) {
+            const el = document.createElement('div');
+            el.className = 'floating-text';
+            el.style.left = `${x}px`;
+            el.style.top = `${y}px`;
+            el.innerText = text;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1000);
+        }
+
+        // 毎秒の更新処理
+        function update() {
+            let totalSps = 0;
+            gameState.items.forEach(item => {
+                totalSps += item.count * item.baseSps;
+            });
+            
+            gameState.stardust += totalSps / 10; // 0.1秒ごとの加算
+            updateDisplay();
+            updateShop();
+        }
+
+        function updateDisplay() {
+            document.getElementById('resource-display').innerText = Math.floor(gameState.stardust).toLocaleString();
+            let totalSps = gameState.items.reduce((sum, item) => sum + (item.count * item.baseSps), 0);
+            document.getElementById('sps-display').innerText = totalSps.toLocaleString();
+        }
+
+        function updateShop() {
+            gameState.items.forEach(item => {
+                const card = document.getElementById(`item-${item.id}`);
+                const costSpan = document.getElementById(`cost-${item.id}`);
+                const countSpan = document.getElementById(`count-${item.id}`);
+                
+                costSpan.innerText = Math.floor(item.cost).toLocaleString();
+                countSpan.innerText = item.count;
+
+                if (gameState.stardust >= item.cost) {
+                    card.classList.remove('disabled');
+                } else {
+                    card.classList.add('disabled');
+                }
+            });
+        }
+
+        function saveGame() {
+            localStorage.setItem('astroHarvesterSave', JSON.stringify(gameState));
+        }
+
+        // メインループ (100msごと)
+        initShop();
+        setInterval(update, 100);
+        setInterval(saveGame, 10000); // 10秒ごとに自動セーブ
+
+    </script>
 </body>
 </html>
