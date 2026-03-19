@@ -108,23 +108,23 @@
            スマホ用レスポンシブ対応（幅768px以下）
            ========================================= */
         @media (max-width: 768px) {
-            #header { padding: 10px; }
-            #resource-display { font-size: 2.2rem; }
-            .status-panel { font-size: 0.85rem; padding: 5px 15px; }
+            #header { padding: 8px; }
+            #resource-display { font-size: 2rem; }
+            .status-panel { font-size: 0.8rem; padding: 5px 10px; }
             
-            #main-container { flex-direction: column; gap: 10px; margin-bottom: 10px; }
+            #main-container { flex-direction: column; gap: 5px; margin-bottom: 5px; }
             
-            /* 上部：惑星表示エリア */
-            #view-area { flex: 0.8; min-height: 250px; justify-content: flex-start; padding-top: 10px; }
-            #planet-visual { width: 150px; height: 150px; }
-            #planet-name { margin-top: 10px; font-size: 1.2rem; }
+            /* 上部：惑星表示エリア（はみ出さないようにコンテンツの高さに合わせる） */
+            #view-area { flex: none; height: auto; padding-top: 5px; padding-bottom: 5px; overflow: visible; }
+            #planet-visual { width: 130px; height: 130px; }
+            #planet-name { margin-top: 5px; font-size: 1.1rem; }
             
-            /* 下部：ショップエリア */
-            #shop-area { width: 100%; flex: 1.2; border-left: none; border-top: 2px solid #343b47; border-radius: 0 0 15px 15px; padding: 15px 10px 80px 10px; }
+            /* 下部：ショップエリア（残りの画面すべてを使う） */
+            #shop-area { width: 100%; flex: 1; border-left: none; border-top: 2px solid #343b47; border-radius: 0 0 15px 15px; padding: 10px 10px 60px 10px; }
             
-            /* ボタン・UIの微調整 */
-            .button-group { margin-top: 10px; gap: 5px; }
-            .action-btn { padding: 8px 10px; font-size: 0.85rem; }
+            /* ボタンが切れないよう、サイズと余白をコンパクトに */
+            .button-group { margin-top: 5px; gap: 5px; }
+            .action-btn { padding: 6px 8px; font-size: 0.75rem; }
             .golden-ufo { font-size: 2.5rem; }
             
             #modal-content { width: 95%; padding: 15px; }
@@ -152,7 +152,7 @@
                 <div id="planet-visual"></div>
             </div>
             <div id="planet-name">初期化された岩石惑星</div>
-            <p style="font-size: 0.75rem; color: #666; z-index: 5; margin: 5px 0;">タップで資源を採取</p>
+            <p style="font-size: 0.75rem; color: #666; z-index: 5; margin: 2px 0;">タップで資源を採取</p>
             
             <div class="button-group">
                 <button class="action-btn" id="btn-archive" onclick="openModal('archive')">🌌 歴史を見る</button>
@@ -322,7 +322,6 @@
         }
 
         function clickPlanet(e) {
-            // タップエフェクトの位置調整（スマホの場合はタッチイベントの座標を使う）
             const x = e.clientX || e.touches?.[0].clientX || window.innerWidth / 2;
             const y = e.clientY || e.touches?.[0].clientY || 200;
             
@@ -375,7 +374,6 @@
             ufo.className = 'golden-ufo'; ufo.innerText = '🛸✨';
             ufo.style.top = `${Math.random() * 60 + 10}%`; ufo.style.left = `0`; 
 
-            // スマホでも反応しやすくするためにタッチイベントも追加
             const handleUfoClick = (e) => {
                 e.preventDefault();
                 const bonus = Math.floor((getTotalSps() * 100) / 3) + 333;
