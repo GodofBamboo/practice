@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>アストロ・ハーベスターズ：エイリアン・クルー</title>
+    <title>アストロ・ハーベスターズ：インフレーション</title>
     <style>
         :root {
             --bg-color: #0b0e14;
@@ -92,11 +92,10 @@
             z-index: 5;
         }
 
-        /* エイリアンコンテナとアニメーション */
         #alien-container {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; /* クリックを邪魔しない */
+            pointer-events: none;
             overflow: hidden;
             z-index: 1;
         }
@@ -124,16 +123,10 @@
             border: none;
         }
         
-        #btn-archive {
-            background: #243b55;
-            border: 1px solid var(--accent-color);
-        }
+        #btn-archive { background: #243b55; border: 1px solid var(--accent-color); }
         #btn-archive:hover { background: var(--accent-color); color: #000; box-shadow: 0 0 15px var(--accent-color); }
 
-        #btn-alien {
-            background: #4a148c;
-            border: 1px solid #d500f9;
-        }
+        #btn-alien { background: #4a148c; border: 1px solid #d500f9; }
         #btn-alien:hover:not(:disabled) { background: #d500f9; box-shadow: 0 0 15px #d500f9; }
         #btn-alien:disabled { opacity: 0.4; cursor: not-allowed; }
 
@@ -152,6 +145,11 @@
         #shop-area::-webkit-scrollbar-track { background: #1a1f29; border-radius: 4px; }
         #shop-area::-webkit-scrollbar-thumb { background: #343b47; border-radius: 4px; }
         #shop-area::-webkit-scrollbar-thumb:hover { background: #00d4ff; }
+
+        /* スクロールの一番下が見えるように余白を追加 */
+        #shop-items {
+            padding-bottom: 60px;
+        }
 
         .item-card {
             background: #252d3a;
@@ -203,7 +201,6 @@
             50% { opacity: 1; transform: scale(1.2); }
         }
 
-        /* モーダル */
         #modal-overlay {
             display: none;
             position: fixed;
@@ -274,25 +271,28 @@
     </div>
 
     <script>
-        // 1.5倍に調整されたSPS（小数点切り捨て等でキリ良くしています）
         let gameState = {
             stardust: 0,
             currentEvoLevel: 0,
             aliens: 0,
-            alienCost: 500, // 初期の雇用コスト
+            alienCost: 500,
             items: [
-                { id: 0, name: "採掘ドローン", cost: 15, sps: 2, count: 0 },          // 1 -> 2
-                { id: 1, name: "酸素精製プラント", cost: 100, sps: 12, count: 0 },      // 8 -> 12
-                { id: 2, name: "地熱発電所", cost: 1100, sps: 68, count: 0 },         // 45 -> 68
-                { id: 3, name: "軌道エレベーター", cost: 12000, sps: 375, count: 0 },    // 250 -> 375
-                { id: 4, name: "反物質リアクター", cost: 130000, sps: 2400, count: 0 }, // 1600 -> 2400
-                { id: 5, name: "銀河貿易センター", cost: 1400000, sps: 18000, count: 0 },// 12000 -> 18000
-                { id: 6, name: "ダイソン球", cost: 15000000, sps: 142500, count: 0 },   // 95000 -> 142500
-                { id: 7, name: "人工ブラックホール", cost: 200000000, sps: 1200000, count: 0 } // 800000 -> 1200000
+                { id: 0, name: "採掘ドローン", cost: 15, sps: 2, count: 0 },
+                { id: 1, name: "酸素精製プラント", cost: 100, sps: 12, count: 0 },
+                { id: 2, name: "地熱発電所", cost: 1100, sps: 68, count: 0 },
+                { id: 3, name: "軌道エレベーター", cost: 12000, sps: 375, count: 0 },
+                { id: 4, name: "反物質リアクター", cost: 130000, sps: 2400, count: 0 },
+                { id: 5, name: "銀河貿易センター", cost: 1400000, sps: 18000, count: 0 },
+                { id: 6, name: "ダイソン球", cost: 15000000, sps: 142500, count: 0 },
+                { id: 7, name: "人工ブラックホール", cost: 200000000, sps: 1200000, count: 0 },
+                // ↓ここから新規追加の超インフレ施設！
+                { id: 8, name: "銀河系シミュレーター", cost: 5000000000, sps: 35000000, count: 0 }, // 50億
+                { id: 9, name: "多次元エネルギー抽出機", cost: 150000000000, sps: 1200000000, count: 0 }, // 1,500億
+                { id: 10, name: "宇宙創生エンジン", cost: 8000000000000, sps: 75000000000, count: 0 } // 8兆
             ]
         };
 
-        const alienEmojis = ["👾", "👽", "🤖", "🐙", "🛸", "🚀", "🧑‍🚀"];
+        const alienEmojis = ["👾", "👽", "🤖", "🐙", "🛸", "🚀", "🧑‍🚀", "👁️"];
         
         const planetEvos = [
             { threshold: 0, name: "不毛な岩石惑星", color: "#5d9cec", loreTitle: "第1章：孤独な採掘", loreDesc: "何もない宇宙の片隅で、最初の採掘ドローンが起動した。すべてはここから始まる。" },
@@ -301,7 +301,11 @@
             { threshold: 1500, name: "高度文明の惑星", color: "#ffce54", loreTitle: "第4章：星を繋ぐ塔", loreDesc: "軌道エレベーターが天を貫き、地表と宇宙が完全にリンクした。文明は次なるステージへ。" },
             { threshold: 15000, name: "サイバー・ハブ", color: "#ac92ec", loreTitle: "第5章：情報の特異点", loreDesc: "反物質の力で情報網が光速を超え、惑星そのものが超巨大な演算器へと変貌を遂げた。" },
             { threshold: 150000, name: "銀河の要塞都市", color: "#ed5565", loreTitle: "第6章：銀河の中心", loreDesc: "膨大な富が集まるこの星は、全銀河の経済と軍事を支配する難攻不落の要塞都市となった。" },
-            { threshold: 1500000, name: "超次元惑星コア", color: "#ffffff", loreTitle: "第7章：物質の超越", loreDesc: "エネルギーの生産量が物質の限界を突破。星は純粋な光を放つ次元の特異点へと進化した。" }
+            { threshold: 1500000, name: "超次元惑星コア", color: "#ffffff", loreTitle: "第7章：物質の超越", loreDesc: "エネルギーの生産量が物質の限界を突破。星は純粋な光を放つ次元の特異点へと進化した。" },
+            // ↓ここから新規追加の進化！
+            { threshold: 50000000, name: "銀河連邦首都", color: "#f6b93b", loreTitle: "第8章：星々の統合", loreDesc: "無数の星系を束ねる巨大ネットワークの中心。もはや一つの銀河が一つの生命体のようだ。" },
+            { threshold: 2000000000, name: "事象の地平線", color: "#1e272e", loreTitle: "第9章：時空の支配", loreDesc: "人工ブラックホールを完全に制御し、時間と空間さえも資源として抽出している。" },
+            { threshold: 100000000000, name: "ビッグバン・コア", color: "#fa983a", loreTitle: "第10章：新たな宇宙", loreDesc: "この星から放たれるエネルギーは、新しい宇宙を創り出せるほどの規模に達した。" }
         ];
 
         function loadGame() {
@@ -321,7 +325,6 @@
                 });
                 applyEvolution(gameState.currentEvoLevel);
                 
-                // 雇ったエイリアンを復元
                 for(let i=0; i<gameState.aliens; i++) {
                     spawnAlienVisual();
                 }
@@ -378,12 +381,11 @@
             }
         }
 
-        // 宇宙人を雇う
         function hireAlien() {
             if (gameState.stardust >= gameState.alienCost) {
                 gameState.stardust -= gameState.alienCost;
                 gameState.aliens++;
-                gameState.alienCost *= 4; // コストは4倍ずつ跳ね上がる
+                gameState.alienCost *= 4; 
                 spawnAlienVisual();
                 updateDisplay();
                 updateButtons();
@@ -391,21 +393,18 @@
             }
         }
 
-        // 宇宙人を画面に描画して動かす
         function spawnAlienVisual() {
             const container = document.getElementById('alien-container');
             const alien = document.createElement('div');
             alien.className = 'alien';
             alien.innerText = alienEmojis[Math.floor(Math.random() * alienEmojis.length)];
             
-            // 初期位置
             let x = Math.random() * 80 + 10;
             let y = Math.random() * 80 + 10;
             alien.style.left = `${x}%`;
             alien.style.top = `${y}%`;
             container.appendChild(alien);
             
-            // うろうろさせるループ
             setInterval(() => {
                 let nx = x + (Math.random() * 20 - 10);
                 let ny = y + (Math.random() * 20 - 10);
@@ -419,7 +418,7 @@
 
         function getTotalSps() {
             let baseSps = gameState.items.reduce((sum, item) => sum + (item.count * item.sps), 0);
-            let multiplier = 1 + (gameState.aliens * 0.1); // エイリアン1体につき10%アップ！
+            let multiplier = 1 + (gameState.aliens * 0.1);
             return Math.floor(baseSps * multiplier);
         }
 
@@ -462,13 +461,11 @@
             document.getElementById('resource-display').innerText = Math.floor(gameState.stardust).toLocaleString();
             document.getElementById('sps-display').innerText = getTotalSps().toLocaleString();
             
-            // ボーナス表示
             const bonusText = gameState.aliens > 0 ? `(エイリアンボ－ナス: +${gameState.aliens * 10}%)` : '';
             document.getElementById('bonus-display').innerText = bonusText;
         }
 
         function updateButtons() {
-            // ショップのボタン更新
             gameState.items.forEach(item => {
                 const card = document.getElementById(`item-${item.id}`);
                 document.getElementById(`cost-${item.id}`).innerText = Math.floor(item.cost).toLocaleString();
@@ -478,7 +475,6 @@
                 else card.classList.add('disabled');
             });
 
-            // エイリアンボタンの更新
             const btnAlien = document.getElementById('btn-alien');
             btnAlien.innerText = `👾 宇宙人を雇う (Cost: ${Math.floor(gameState.alienCost).toLocaleString()})`;
             btnAlien.disabled = gameState.stardust < gameState.alienCost;
@@ -495,7 +491,6 @@
             localStorage.setItem('astroEvolutionSave', JSON.stringify(data));
         }
 
-        // 図鑑
         function openArchive() {
             const overlay = document.getElementById('modal-overlay');
             const list = document.getElementById('lore-list');
