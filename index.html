@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>アストロ・ハーベスターズ：インフレーション</title>
+    <title>アストロ・ハーベスターズ：フォーマット</title>
     <style>
         :root {
             --bg-color: #0b0e14;
@@ -146,10 +146,7 @@
         #shop-area::-webkit-scrollbar-thumb { background: #343b47; border-radius: 4px; }
         #shop-area::-webkit-scrollbar-thumb:hover { background: #00d4ff; }
 
-        /* スクロールの一番下が見えるように余白を追加 */
-        #shop-items {
-            padding-bottom: 60px;
-        }
+        #shop-items { padding-bottom: 60px; }
 
         .item-card {
             background: #252d3a;
@@ -167,7 +164,7 @@
         .item-info { display: flex; justify-content: space-between; align-items: center; }
         .item-name { font-weight: bold; font-size: 1rem; }
         .item-count { font-size: 1.2rem; color: var(--accent-color); font-weight: bold; }
-        .item-cost { color: #ffce54; font-size: 0.85rem; display: block; }
+        .item-cost { color: #ffce54; font-size: 0.9rem; display: block; font-weight: bold;}
         .item-desc { font-size: 0.75rem; color: #888; }
 
         .floating-text {
@@ -271,6 +268,27 @@
     </div>
 
     <script>
+        // ----------------------------------------------------
+        // 数値を短く整形する関数 (1.2k, 1.5m, 3.4b...)
+        // ----------------------------------------------------
+        function formatNumber(num) {
+            if (num < 1000) return Math.floor(num).toString();
+            // サフィックス: k(千), m(百万), b(十億), t(兆), qa(千兆), qi(百京), sx(十垓)
+            const suffixes = ["", "k", "m", "b", "t", "qa", "qi", "sx", "sp", "o", "n", "d"];
+            const tier = Math.floor(Math.log10(num) / 3);
+            
+            if (tier >= suffixes.length) {
+                return num.toExponential(2).replace('e+', 'e'); // サフィックスが尽きたら指数表記
+            }
+            
+            const suffix = suffixes[tier];
+            const scale = Math.pow(10, tier * 3);
+            const scaled = num / scale;
+            
+            // 小数点第2位まで表示し、末尾の不要な0を消す
+            return parseFloat(scaled.toFixed(2)) + suffix;
+        }
+
         let gameState = {
             stardust: 0,
             currentEvoLevel: 0,
@@ -285,10 +303,9 @@
                 { id: 5, name: "銀河貿易センター", cost: 1400000, sps: 18000, count: 0 },
                 { id: 6, name: "ダイソン球", cost: 15000000, sps: 142500, count: 0 },
                 { id: 7, name: "人工ブラックホール", cost: 200000000, sps: 1200000, count: 0 },
-                // ↓ここから新規追加の超インフレ施設！
-                { id: 8, name: "銀河系シミュレーター", cost: 5000000000, sps: 35000000, count: 0 }, // 50億
-                { id: 9, name: "多次元エネルギー抽出機", cost: 150000000000, sps: 1200000000, count: 0 }, // 1,500億
-                { id: 10, name: "宇宙創生エンジン", cost: 8000000000000, sps: 75000000000, count: 0 } // 8兆
+                { id: 8, name: "銀河系シミュレーター", cost: 5000000000, sps: 35000000, count: 0 }, 
+                { id: 9, name: "多次元エネルギー抽出機", cost: 150000000000, sps: 1200000000, count: 0 }, 
+                { id: 10, name: "宇宙創生エンジン", cost: 8000000000000, sps: 75000000000, count: 0 } 
             ]
         };
 
@@ -302,7 +319,6 @@
             { threshold: 15000, name: "サイバー・ハブ", color: "#ac92ec", loreTitle: "第5章：情報の特異点", loreDesc: "反物質の力で情報網が光速を超え、惑星そのものが超巨大な演算器へと変貌を遂げた。" },
             { threshold: 150000, name: "銀河の要塞都市", color: "#ed5565", loreTitle: "第6章：銀河の中心", loreDesc: "膨大な富が集まるこの星は、全銀河の経済と軍事を支配する難攻不落の要塞都市となった。" },
             { threshold: 1500000, name: "超次元惑星コア", color: "#ffffff", loreTitle: "第7章：物質の超越", loreDesc: "エネルギーの生産量が物質の限界を突破。星は純粋な光を放つ次元の特異点へと進化した。" },
-            // ↓ここから新規追加の進化！
             { threshold: 50000000, name: "銀河連邦首都", color: "#f6b93b", loreTitle: "第8章：星々の統合", loreDesc: "無数の星系を束ねる巨大ネットワークの中心。もはや一つの銀河が一つの生命体のようだ。" },
             { threshold: 2000000000, name: "事象の地平線", color: "#1e272e", loreTitle: "第9章：時空の支配", loreDesc: "人工ブラックホールを完全に制御し、時間と空間さえも資源として抽出している。" },
             { threshold: 100000000000, name: "ビッグバン・コア", color: "#fa983a", loreTitle: "第10章：新たな宇宙", loreDesc: "この星から放たれるエネルギーは、新しい宇宙を創り出せるほどの規模に達した。" }
@@ -339,13 +355,14 @@
                 card.className = 'item-card';
                 card.id = `item-${item.id}`;
                 card.onclick = () => buyItem(item.id);
+                // formatNumber を適用
                 card.innerHTML = `
                     <div class="item-info">
                         <span class="item-name">${item.name}</span>
                         <span class="item-count" id="count-${item.id}">${item.count}</span>
                     </div>
-                    <span class="item-cost">Cost: <span id="cost-${item.id}">${Math.floor(item.cost).toLocaleString()}</span></span>
-                    <span class="item-desc">生産量: +${item.sps.toLocaleString()}/sec</span>
+                    <span class="item-cost">Cost: <span id="cost-${item.id}">${formatNumber(item.cost)}</span></span>
+                    <span class="item-desc">生産量: +${formatNumber(item.sps)}/sec</span>
                 `;
                 container.appendChild(card);
             });
@@ -355,7 +372,8 @@
         function clickPlanet(e) {
             const power = 1 + Math.floor(getTotalSps() * 0.05);
             gameState.stardust += power;
-            createFloatingText(e.clientX, e.clientY, `+${power.toLocaleString()}`);
+            // クリックの浮かび上がる数字も短縮
+            createFloatingText(e.clientX, e.clientY, `+${formatNumber(power)}`);
             updateDisplay();
         }
 
@@ -458,8 +476,9 @@
         }
 
         function updateDisplay() {
-            document.getElementById('resource-display').innerText = Math.floor(gameState.stardust).toLocaleString();
-            document.getElementById('sps-display').innerText = getTotalSps().toLocaleString();
+            // メインの表示も formatNumber を適用
+            document.getElementById('resource-display').innerText = formatNumber(gameState.stardust);
+            document.getElementById('sps-display').innerText = formatNumber(getTotalSps());
             
             const bonusText = gameState.aliens > 0 ? `(エイリアンボ－ナス: +${gameState.aliens * 10}%)` : '';
             document.getElementById('bonus-display').innerText = bonusText;
@@ -468,7 +487,8 @@
         function updateButtons() {
             gameState.items.forEach(item => {
                 const card = document.getElementById(`item-${item.id}`);
-                document.getElementById(`cost-${item.id}`).innerText = Math.floor(item.cost).toLocaleString();
+                // コスト表示を formatNumber に変更
+                document.getElementById(`cost-${item.id}`).innerText = formatNumber(item.cost);
                 document.getElementById(`count-${item.id}`).innerText = item.count;
                 
                 if (gameState.stardust >= item.cost) card.classList.remove('disabled');
@@ -476,7 +496,7 @@
             });
 
             const btnAlien = document.getElementById('btn-alien');
-            btnAlien.innerText = `👾 宇宙人を雇う (Cost: ${Math.floor(gameState.alienCost).toLocaleString()})`;
+            btnAlien.innerText = `👾 宇宙人を雇う (Cost: ${formatNumber(gameState.alienCost)})`;
             btnAlien.disabled = gameState.stardust < gameState.alienCost;
         }
 
@@ -504,7 +524,8 @@
                     entry.innerHTML = `<h4 style="color: ${evo.color}">${evo.loreTitle}</h4><p>${evo.loreDesc}</p>`;
                 } else {
                     entry.className = 'lore-entry lore-locked';
-                    entry.innerHTML = `<p>❓ 条件未達成（SPS: ${evo.threshold.toLocaleString()}で解放）</p>`;
+                    // アーカイブの未解放条件も formatNumber に変更
+                    entry.innerHTML = `<p>❓ 条件未達成（SPS: ${formatNumber(evo.threshold)}で解放）</p>`;
                 }
                 list.appendChild(entry);
             });
