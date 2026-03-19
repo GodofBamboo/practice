@@ -29,7 +29,8 @@
         #resource-display { font-size: 2.8rem; font-weight: bold; color: var(--accent-color); text-shadow: 0 0 15px rgba(0, 212, 255, 0.6); }
         .status-panel { background: rgba(255,255,255,0.05); padding: 5px 20px; border-radius: 20px; display: inline-block; margin-top: 5px; }
 
-        #main-container { display: flex; width: 95%; max-width: 1100px; gap: 20px; height: calc(100vh - 140px); padding-bottom: 20px; z-index: 5; }
+        /* レイアウト修正: flex: 1とmin-height: 0を使用して画面内に確実に収める */
+        #main-container { display: flex; width: 95%; max-width: 1100px; gap: 20px; flex: 1; min-height: 0; margin-bottom: 20px; z-index: 5; }
         #view-area { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; overflow: hidden; }
 
         #planet-container { position: relative; cursor: pointer; transition: transform 0.1s; z-index: 5; }
@@ -61,7 +62,8 @@
         #btn-prestige:hover:not(:disabled) { background: #f39c12; box-shadow: 0 0 15px #f39c12; }
         #btn-prestige:disabled { opacity: 0.4; cursor: not-allowed; display: none; }
 
-        #shop-area { width: 380px; height: 100%; overflow-y: auto; background-color: var(--panel-bg); border-radius: 15px; padding: 15px; border-left: 2px solid #343b47; box-sizing: border-box; position: relative; z-index: 5; }
+        /* スクロールエリア修正: padding-bottomを増やして最後まで見えるようにした */
+        #shop-area { width: 380px; height: 100%; overflow-y: auto; background-color: var(--panel-bg); border-radius: 15px; padding: 15px 15px 50px 15px; border-left: 2px solid #343b47; box-sizing: border-box; position: relative; z-index: 5; }
         #shop-area::-webkit-scrollbar { width: 8px; }
         #shop-area::-webkit-scrollbar-track { background: #1a1f29; border-radius: 4px; }
         #shop-area::-webkit-scrollbar-thumb { background: #343b47; border-radius: 4px; }
@@ -219,7 +221,6 @@
             { threshold: 100000000000, name: "ビッグバン・コア", color: "#fa983a", loreTitle: "第10章：新たな宇宙", loreDesc: "この星から放たれるエネルギーは、新しい宇宙を創り出せるほどの規模に達した。" }
         ];
 
-        // 宇宙の塵（パーティクル）を生成する関数
         function createParticles() {
             const container = document.getElementById('particles-container');
             const particleCount = 80;
@@ -231,7 +232,7 @@
                 p.style.height = `${size}px`;
                 p.style.left = `${Math.random() * 100}vw`;
                 p.style.top = `${Math.random() * 100}vh`;
-                p.style.animationDuration = `${Math.random() * 4 + 3}s`; // 3〜7秒
+                p.style.animationDuration = `${Math.random() * 4 + 3}s`;
                 p.style.animationDelay = `${Math.random() * 5}s`;
                 
                 if (Math.random() > 0.8) {
@@ -363,7 +364,6 @@
 
         function getTotalSps() {
             let baseSps = gameState.items.reduce((sum, item) => sum + (item.count * item.sps), 0);
-            // ナーフ: 周回ボーナスを5倍から1.5倍へ
             return Math.floor(baseSps * (1 + (gameState.aliens * 0.1)) * Math.pow(1.5, gameState.planetLevel - 1));
         }
 
@@ -396,10 +396,8 @@
             document.getElementById('sps-display').innerText = formatNumber(getTotalSps());
             document.getElementById('bonus-display').innerText = gameState.aliens > 0 ? `(エイリアン: +${gameState.aliens * 10}%)` : '';
             
-            // 周回ボーナスの表示計算 (1.5倍の累乗)
             if (gameState.planetLevel > 1) {
                 const prestigeMult = Math.pow(1.5, gameState.planetLevel - 1);
-                // 小数点第2位まで表示（キリが良い場合はそのまま）
                 const displayMult = prestigeMult % 1 === 0 ? prestigeMult : prestigeMult.toFixed(2);
                 document.getElementById('prestige-display').innerText = `(周回ボーナス: x${displayMult})`;
             } else {
@@ -452,7 +450,6 @@
         }
 
         function prestigeJump() {
-            // テキストを1.5倍に修正
             if (confirm("現在の惑星を旅立ち、新たな惑星へ移住しますか？\n【注意】資源、施設、宇宙人は初期化されます（実績は引き継がれます）。\n【報酬】以降の全生産量が永久に1.5倍になります！")) {
                 gameState.planetLevel++; gameState.stardust = 0; gameState.currentEvoLevel = 0; gameState.aliens = 0; gameState.alienCost = 500;
                 gameState.items.forEach(item => { item.count = 0; item.cost = item.baseCost; });
@@ -510,7 +507,6 @@
 
         function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
 
-        // 初期化処理
         createParticles();
         loadGame(); 
         initShop(); 
