@@ -104,29 +104,19 @@
         .ach-entry.unlocked .ach-info h4 { color: var(--gold); }
         .ach-info p { margin: 0; font-size: 0.85rem; color: #aaa; }
 
-        /* =========================================
-           スマホ用レスポンシブ対応（幅768px以下）
-           ========================================= */
+        /* スマホ用レスポンシブ対応（幅768px以下） */
         @media (max-width: 768px) {
             #header { padding: 8px; }
             #resource-display { font-size: 2rem; }
             .status-panel { font-size: 0.8rem; padding: 5px 10px; }
-            
             #main-container { flex-direction: column; gap: 5px; margin-bottom: 5px; }
-            
-            /* 上部：惑星表示エリア（はみ出さないようにコンテンツの高さに合わせる） */
             #view-area { flex: none; height: auto; padding-top: 5px; padding-bottom: 5px; overflow: visible; }
             #planet-visual { width: 130px; height: 130px; }
             #planet-name { margin-top: 5px; font-size: 1.1rem; }
-            
-            /* 下部：ショップエリア（残りの画面すべてを使う） */
             #shop-area { width: 100%; flex: 1; border-left: none; border-top: 2px solid #343b47; border-radius: 0 0 15px 15px; padding: 10px 10px 60px 10px; }
-            
-            /* ボタンが切れないよう、サイズと余白をコンパクトに */
             .button-group { margin-top: 5px; gap: 5px; }
             .action-btn { padding: 6px 8px; font-size: 0.75rem; }
             .golden-ufo { font-size: 2.5rem; }
-            
             #modal-content { width: 95%; padding: 15px; }
         }
     </style>
@@ -205,12 +195,15 @@
                 { id: 10, name: "宇宙創生エンジン", baseCost: 8000000000000, cost: 8000000000000, sps: 75000000000, count: 0 },
                 { id: 11, name: "多世界干渉アレイ", baseCost: 400000000000000, cost: 400000000000000, sps: 5000000000000, count: 0 },
                 { id: 12, name: "アカシック・マニピュレーター", baseCost: 25000000000000000, cost: 25000000000000000, sps: 400000000000000, count: 0 },
-                { id: 13, name: "事象の超越者（オメガ）", baseCost: 999000000000000000, cost: 999000000000000000, sps: 20000000000000000, count: 0 }
+                { id: 13, name: "事象の超越者（オメガ）", baseCost: 999000000000000000, cost: 999000000000000000, sps: 20000000000000000, count: 0 },
+                { id: 14, name: "宇宙樹（ユグドラシル）", baseCost: 5000000000000000000, cost: 5000000000000000000, sps: 100000000000000000, count: 0 }, 
+                { id: 15, name: "次元統合コライダー", baseCost: 800000000000000000000, cost: 800000000000000000000, sps: 20000000000000000000, count: 0 }, 
+                { id: 16, name: "真理の到達者（アルファ）", baseCost: 100000000000000000000000, cost: 100000000000000000000000, sps: 5000000000000000000000, count: 0 } 
             ]
         };
 
         const alienEmojis = ["👾", "👽", "🤖", "🐙", "🛸", "🚀", "🧑‍🚀", "👁️"];
-        const itemIcons = ["⛏️", "💨", "🌋", "🗼", "⚛️", "🏢", "☀️", "🕳️", "🌌", "💠", "🎇", "📡", "👁️", "👑"];
+        const itemIcons = ["⛏️", "💨", "🌋", "🗼", "⚛️", "🏢", "☀️", "🕳️", "🌌", "💠", "🎇", "📡", "👁️", "👑", "🌳", "🧬", "♾️"];
         const milestones = [1, 10, 50, 100];
         
         let achievementsList = [
@@ -396,9 +389,10 @@
 
         function checkRandomEvent() { if (Math.random() < 0.025) spawnUFO(); }
 
+        // 【修正点】周回ボーナスを足し算に変更
         function getTotalSps() {
             let baseSps = gameState.items.reduce((sum, item) => sum + (item.count * item.sps), 0);
-            return Math.floor(baseSps * (1 + (gameState.aliens * 0.1)) * Math.pow(1.5, gameState.planetLevel - 1));
+            return Math.floor(baseSps * (1 + (gameState.aliens * 0.1)) * (1 + (gameState.planetLevel - 1) * 0.5));
         }
 
         function update() {
@@ -431,7 +425,8 @@
             document.getElementById('bonus-display').innerText = gameState.aliens > 0 ? `(エイリアン: +${gameState.aliens * 10}%)` : '';
             
             if (gameState.planetLevel > 1) {
-                const prestigeMult = Math.pow(1.5, gameState.planetLevel - 1);
+                // 【修正点】表示用の倍率計算も足し算方式に合わせる
+                const prestigeMult = 1 + (gameState.planetLevel - 1) * 0.5;
                 const displayMult = prestigeMult % 1 === 0 ? prestigeMult : prestigeMult.toFixed(2);
                 document.getElementById('prestige-display').innerText = `(周回ボーナス: x${displayMult})`;
             } else {
@@ -484,7 +479,7 @@
         }
 
         function prestigeJump() {
-            if (confirm("現在の惑星を旅立ち、新たな惑星へ移住しますか？\n【注意】資源、施設、宇宙人は初期化されます（実績は引き継がれます）。\n【報酬】以降の全生産量が永久に1.5倍になります！")) {
+            if (confirm("現在の惑星を旅立ち、新たな惑星へ移住しますか？\n【注意】資源、施設、宇宙人は初期化されます（実績は引き継がれます）。\n【報酬】以降の全生産量が永久に +50% されます！")) {
                 gameState.planetLevel++; gameState.stardust = 0; gameState.currentEvoLevel = 0; gameState.aliens = 0; gameState.alienCost = 500;
                 gameState.items.forEach(item => { item.count = 0; item.cost = item.baseCost; });
                 document.getElementById('alien-container').innerHTML = '';
