@@ -535,19 +535,26 @@
         function updateButtons() {
             gameState.items.forEach(item => {
                 const card = document.getElementById(`item-${item.id}`);
-                document.getElementById(`cost-${item.id}`).innerText = formatNumber(item.cost);
-                document.getElementById(`count-${item.id}`).innerText = item.count;
-                document.getElementById(`star-${item.id}`).innerText = getMilestoneStars(item.count);
-                card.classList.toggle('disabled', gameState.stardust < item.cost);
+                // エラー防止のために要素の存在確認を追加
+                if (card) {
+                    document.getElementById(`cost-${item.id}`).innerText = formatNumber(item.cost);
+                    document.getElementById(`count-${item.id}`).innerText = item.count;
+                    document.getElementById(`star-${item.id}`).innerText = getMilestoneStars(item.count);
+                    card.classList.toggle('disabled', gameState.stardust < item.cost);
+                }
             });
             const btnAlien = document.getElementById('btn-alien');
-            btnAlien.innerText = `👾 宇宙人を雇う (Cost: ${formatNumber(gameState.alienCost)})`;
-            btnAlien.disabled = gameState.stardust < gameState.alienCost;
+            if (btnAlien) {
+                btnAlien.innerText = `👾 宇宙人を雇う (Cost: ${formatNumber(gameState.alienCost)})`;
+                btnAlien.disabled = gameState.stardust < gameState.alienCost;
+            }
 
             const btnPrestige = document.getElementById('btn-prestige');
-            if (gameState.items[10].count >= 1) {
-                btnPrestige.style.display = "block"; btnPrestige.disabled = false;
-            } else { btnPrestige.style.display = "none"; }
+            if (btnPrestige) {
+                if (gameState.items[10].count >= 1) {
+                    btnPrestige.style.display = "block"; btnPrestige.disabled = false;
+                } else { btnPrestige.style.display = "none"; }
+            }
         }
 
         function checkAchievements() {
@@ -659,12 +666,10 @@
                     list.appendChild(entry);
                 });
             } else if (type === 'ranking') {
-                // ★ランキングのUI画面 (動的ダミー生成版)
                 title.innerText = "👑 銀河開拓者ランキング";
                 list.innerHTML = `<p style="color: #aaa; font-size: 0.85rem; text-align: center; margin-bottom: 20px;">ライバルたちは常にあなたの少し先を開拓しています！<br>負けずに次の惑星へ移住しましょう！</p>`;
                 
                 const pLevel = gameState.planetLevel;
-                // プレイヤーの現在レベルに合わせて、常に先を行くライバルを生成
                 const dynamicLeaderboard = [
                     { name: "スターダスト皇帝", score: pLevel + 12 },
                     { name: "銀河の覇者", score: pLevel + 5 },
@@ -673,7 +678,6 @@
                     { name: "見習いマイナー", score: Math.max(1, pLevel - 1) }
                 ];
                 
-                // スコア順に並び替え
                 dynamicLeaderboard.sort((a, b) => b.score - a.score);
 
                 dynamicLeaderboard.forEach((player, index) => {
@@ -683,7 +687,6 @@
                     else if (index === 1) rankClass += " top2";
                     else if (index === 2) rankClass += " top3";
 
-                    // プレイヤー自身の行を目立たせる
                     let nameStyle = player.isPlayer ? "color: var(--accent-color); font-size: 1.1rem; text-decoration: underline;" : "";
                     if (player.isPlayer) rankClass += " player-rank";
 
@@ -729,7 +732,9 @@
 
         function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
 
+        // --- ここを修正しました！(initShop() の呼び出しを追加) ---
         createParticles();
+        initShop(); 
         loadGame(); 
         setInterval(update, 250); 
         setInterval(saveGame, 10000); 
