@@ -26,7 +26,6 @@
 
         #header { text-align: center; padding: 15px; width: 100%; background: linear-gradient(180deg, #161b22 0%, transparent 100%); flex-shrink: 0; z-index: 10; box-sizing: border-box; position: relative; }
         
-        /* サウンドトグルボタンのスタイル */
         #sound-toggle-container { position: absolute; top: 15px; right: 20px; }
         #btn-sound { background: #c0392b; border: 1px solid #e74c3c; padding: 8px 12px; color: #fff; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 0.9rem; }
         #btn-sound.sound-on { background: #27ae60; border-color: #2ecc71; }
@@ -57,6 +56,9 @@
 
         #btn-achievements { background: #2c3e50; border: 1px solid var(--gold); }
         #btn-achievements:hover { background: var(--gold); color: #000; box-shadow: 0 0 15px var(--gold); }
+        
+        #btn-ranking { background: #8e44ad; border: 1px solid #9b59b6; }
+        #btn-ranking:hover { background: #9b59b6; color: #fff; box-shadow: 0 0 15px #9b59b6; }
 
         #btn-alien { background: #4a148c; border: 1px solid #d500f9; }
         #btn-alien:hover:not(:disabled) { background: #d500f9; box-shadow: 0 0 15px #d500f9; }
@@ -112,8 +114,17 @@
         .ach-entry.unlocked .ach-info h4 { color: var(--gold); }
         .ach-info p { margin: 0; font-size: 0.85rem; color: #aaa; }
 
+        /* ランキング用スタイル */
+        .rank-entry { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #252d3a; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid #444; }
+        .rank-entry.top1 { border-left-color: #f1c40f; background: rgba(241, 196, 15, 0.1); }
+        .rank-entry.top2 { border-left-color: #bdc3c7; background: rgba(189, 195, 199, 0.1); }
+        .rank-entry.top3 { border-left-color: #cd7f32; background: rgba(205, 127, 50, 0.1); }
+        .rank-num { font-size: 1.2rem; font-weight: bold; width: 30px; }
+        .rank-name { flex: 1; font-weight: bold; }
+        .rank-score { color: var(--accent-color); font-weight: bold; }
+
         @media (max-width: 768px) {
-            #header { padding: 8px; padding-top: 40px; } /* モバイル時はサウンドボタン用の余白を確保 */
+            #header { padding: 8px; padding-top: 40px; } 
             #sound-toggle-container { top: 5px; right: 10px; }
             #resource-display { font-size: 2rem; }
             .status-panel { font-size: 0.8rem; padding: 5px 10px; }
@@ -158,6 +169,7 @@
             <div class="button-group">
                 <button class="action-btn" id="btn-archive" onclick="openModal('archive')">🌌 歴史</button>
                 <button class="action-btn" id="btn-achievements" onclick="openModal('achievements')">🏆 実績</button>
+                <button class="action-btn" id="btn-ranking" onclick="openModal('ranking')">👑 ランキング</button>
                 <button class="action-btn" id="btn-settings" onclick="openModal('settings')">⚙️ 設定</button>
                 <button class="action-btn" id="btn-alien" onclick="hireAlien()">👾 宇宙人を雇う</button>
                 <button class="action-btn" id="btn-prestige" onclick="prestigeJump()">🚀 次の惑星へ移住</button>
@@ -191,7 +203,6 @@
             isSoundEnabled = !isSoundEnabled;
             
             if (isSoundEnabled) {
-                // 初回ON時にAudioContextを生成、または再開
                 if (!audioCtx) {
                     audioCtx = new AudioContext();
                 } else if (audioCtx.state === 'suspended') {
@@ -199,7 +210,7 @@
                 }
                 btn.innerText = '🔊 サウンドON';
                 btn.classList.add('sound-on');
-                playSound('tap'); // テスト音を鳴らす
+                playSound('tap'); 
             } else {
                 if (audioCtx && audioCtx.state === 'running') {
                     audioCtx.suspend();
@@ -210,7 +221,6 @@
         }
 
         function playSound(type) {
-            // サウンドがOFF、またはAudioContextの準備ができていない場合は何もしない
             if (!isSoundEnabled || !audioCtx || audioCtx.state === 'suspended') return;
             
             const osc = audioCtx.createOscillator();
@@ -648,6 +658,44 @@
                     `;
                     list.appendChild(entry);
                 });
+            } else if (type === 'ranking') {
+                // ★ランキングのUI画面 (動的ダミー生成版)
+                title.innerText = "👑 銀河開拓者ランキング";
+                list.innerHTML = `<p style="color: #aaa; font-size: 0.85rem; text-align: center; margin-bottom: 20px;">ライバルたちは常にあなたの少し先を開拓しています！<br>負けずに次の惑星へ移住しましょう！</p>`;
+                
+                const pLevel = gameState.planetLevel;
+                // プレイヤーの現在レベルに合わせて、常に先を行くライバルを生成
+                const dynamicLeaderboard = [
+                    { name: "スターダスト皇帝", score: pLevel + 12 },
+                    { name: "銀河の覇者", score: pLevel + 5 },
+                    { name: "熟練の開拓者", score: pLevel + 1 },
+                    { name: "あなた", score: pLevel, isPlayer: true },
+                    { name: "見習いマイナー", score: Math.max(1, pLevel - 1) }
+                ];
+                
+                // スコア順に並び替え
+                dynamicLeaderboard.sort((a, b) => b.score - a.score);
+
+                dynamicLeaderboard.forEach((player, index) => {
+                    const entry = document.createElement('div');
+                    let rankClass = "rank-entry";
+                    if (index === 0) rankClass += " top1";
+                    else if (index === 1) rankClass += " top2";
+                    else if (index === 2) rankClass += " top3";
+
+                    // プレイヤー自身の行を目立たせる
+                    let nameStyle = player.isPlayer ? "color: var(--accent-color); font-size: 1.1rem; text-decoration: underline;" : "";
+                    if (player.isPlayer) rankClass += " player-rank";
+
+                    entry.className = rankClass;
+                    entry.innerHTML = `
+                        <div class="rank-num">${index + 1}</div>
+                        <div class="rank-name" style="${nameStyle}">${player.name}</div>
+                        <div class="rank-score">${formatNumber(player.score)} 惑星</div>
+                    `;
+                    list.appendChild(entry);
+                });
+
             } else if (type === 'settings') {
                 title.innerText = "⚙️ 設定 / データ引き継ぎ";
                 list.innerHTML = `
